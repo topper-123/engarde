@@ -264,6 +264,7 @@ def test_one_to_many():
     result = ck.one_to_many(df, 'units', 'parameter')
     tm.assert_frame_equal(df, result)
 
+
 def test_one_to_many_raises():
     df = pd.DataFrame({
         'parameter': ['Cu', 'Cu', 'Pb', 'Pb'],
@@ -273,39 +274,31 @@ def test_one_to_many_raises():
     with pytest.raises(AssertionError):
         ck.one_to_many(df, 'units', 'parameter')
 
-def test_verify():
+
+def test_verify_df():
     f = lambda x, n: len(x) > n
     df = pd.DataFrame({'A': [1, 2, 3]})
-    tm.assert_frame_equal(df, ck.verify(df, f, n=2))
-    tm.assert_frame_equal(df, ck.verify(df, f, 2))
+    tm.assert_frame_equal(df, ck.verify_df(df, f, n=2))
+    tm.assert_frame_equal(df, ck.verify_df(df, f, 2))
 
-    # order is verify_func, verif_kwargs, decorated_func
-    tm.assert_frame_equal(df, dc.verify(f, n=2)(_noop)(df))
-    tm.assert_frame_equal(df, dc.verify(f, 2)(_noop)(df))
+    # order is verify_func, verify_kwargs, decorated_func
+    tm.assert_frame_equal(df, dc.verify_df(f, n=2)(_noop)(df))
+    tm.assert_frame_equal(df, dc.verify_df(f, 2)(_noop)(df))
 
     with pytest.raises(AssertionError):
-        ck.verify(df, f, n=4)
+        ck.verify_df(df, f, n=4)
         dc.verify(f, n=4)(_noop)(df)
 
-def test_verify_all():
-    f = lambda x, n: x > n
+def test_verify_columns():
+    f = lambda x, n: (x > n).all()
     df = pd.DataFrame({'A': [1, 2, 3]})
-    tm.assert_frame_equal(df, ck.verify_all(df, f, 0))
-    tm.assert_frame_equal(df, ck.verify_all(df, f, n=0))
+    tm.assert_frame_equal(df, ck.verify_columns(df, f, 0))
+    tm.assert_frame_equal(df, ck.verify_columns(df, f, n=0))
 
     with pytest.raises(AssertionError):
-        ck.verify_all(df, f, n=2)
+        ck.verify_columns(df, f, n=2)
         dc.verify_all(f, n=2)(df)
 
-def test_verify_any():
-    f = lambda x, n: x > n
-    df = pd.DataFrame({'A': [1, 2, 3]})
-    tm.assert_frame_equal(df, ck.verify_any(df, f, 2))
-    tm.assert_frame_equal(df, ck.verify_any(df, f, n=2))
-
-    with pytest.raises(AssertionError):
-        ck.verify_any(df, f, n=4)
-        dc.verify_any(f, n=4)(df)
 
 def test_is_same_as():
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [1, 2, 3]})

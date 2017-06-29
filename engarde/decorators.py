@@ -144,36 +144,33 @@ def one_to_many(unitcol, manycol):
     return decorate
 
 
-def verify(func, *args, **kwargs):
+def verify_df(check, *args, **kwargs):
     """
-    Assert that `func(df, *args, **kwargs)` is true.
+    Assert that `check(df, *args, **kwargs)` is true.
     """
-    return _verify(func, None, *args, **kwargs)
-
-def verify_all(func, *args, **kwargs):
-    """
-    Assert that all of `func(*args, **kwargs)` are true.
-    """
-    return _verify(func, 'all', *args, **kwargs)
-
-def verify_any(func, *args, **kwargs):
-    """
-    Assert that any of `func(*args, **kwargs)` are true.
-    """
-    return _verify(func, 'any', *args, **kwargs)
-
-def _verify(func, _kind, *args, **kwargs):
-    d = {None: ck.verify, 'all': ck.verify_all, 'any': ck.verify_any}
-    vfunc = d[_kind]
-
-    def decorate(operation_func):
-        @wraps(operation_func)
-        def wrapper(*operation_args, **operation_kwargs):
-            result = operation_func(*operation_args, **operation_kwargs)
-            vfunc(result, func, *args, **kwargs)
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args_inner, **kwargs_inner):
+            result = func(*args_inner, **kwargs_inner)
+            ck.verify_df(result, check, *args, **kwargs)
             return result
         return wrapper
     return decorate
+
+
+def verify_columns(items, *args, **kwargs):
+    """
+    Assert that for all keys/values of items, `value(df[key], *args, **kwargs)` is true.
+    """
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args_inner, **kwargs_inner):
+            result = func(*args_inner, **kwargs_inner)
+            ck.verify_columns(result, items, *args, **kwargs)
+            return result
+        return wrapper
+    return decorate
+
 
 
 def is_same_as(df_to_compare, **assert_kwargs):
@@ -189,5 +186,5 @@ def is_same_as(df_to_compare, **assert_kwargs):
 
 __all__ = ['is_monotonic', 'is_same_as', 'is_shape', 'none_missing',
            'unique_index', 'within_range', 'within_set', 'has_dtypes',
-           'verify', 'verify_all', 'verify_any', 'within_n_std']
+           'verify_df', 'verify_columns', 'within_n_std']
 

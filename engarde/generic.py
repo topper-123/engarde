@@ -9,12 +9,12 @@ import pandas as pd
 
 
 # --------------
-# Generic verify
+# Generic verify_df
 # --------------
 
-def verify(df, check, *args, **kwargs):
+def verify_df(df, check, *args, **kwargs):
     """
-    Generic verify. Assert that ``check(df, *args, **kwargs)`` is
+    Verify dataframe. Assert that ``check(df, *args, **kwargs)`` is
     true.
 
     Parameters
@@ -37,32 +37,32 @@ def verify(df, check, *args, **kwargs):
         raise
     return df
 
-def verify_all(df, check, *args, **kwargs):
-    """
-    Verify that all the entries in ``check(df, *args, **kwargs)``
-    are true.
-    """
-    result = check(df, *args, **kwargs)
-    try:
-        assert np.all(result)
-    except AssertionError as e:
-        msg = "{} not true for all".format(check.__name__)
-        e.args = (msg, df[~result])
-        raise
-    return df
 
-def verify_any(df, check, *args, **kwargs):
+def verify_columns(df, items, *args, **kwargs):
     """
-    Verify that any of the entries in ``check(df, *args, **kwargs)``
-    is true
+    Verify that all checks in items are True.
+
+    Parameters
+    ==========
+    df : DataFrame
+    items : function or dict of columns/functon mapping.
+        Functions should take DataFrame, *args, and **kwargs.
+        Should returns bool.
+
+    Returns
+    =======
+    df : DataFrame
+        same as the input.
     """
-    result = check(df, *args, **kwargs)
-    try:
-        assert np.any(result)
-    except AssertionError as e:
-        msg = '{} not true for any'.format(check.__name__)
-        e.args = (msg, df)
-        raise
+    from types import FunctionType
+    msg = "Columns {!r} don't pass the checks."
+    if isinstance(items, FunctionType):
+        for col_name, column in df.items():
+            assert items(column, *args, **kwargs), msg.format(col_name)
+    else:
+        for col_name, check_function in items.items():
+            col = df[col_name]
+            assert check_function(col, *args, **kwargs), msg.format(col_name)
     return df
 
 # ---------------
@@ -76,5 +76,5 @@ def bad_locations(df):
     msg = bad.values
     return msg
 
-__all__ = ['verify', 'verify_all', 'verify_any', 'bad_locations']
+__all__ = ['verify_df', 'verify_columns', 'bad_locations']
 
