@@ -172,7 +172,6 @@ def verify_columns(items, *args, **kwargs):
     return decorate
 
 
-
 def is_same_as(df_to_compare, **assert_kwargs):
     def decorate(func):
         @wraps(func)

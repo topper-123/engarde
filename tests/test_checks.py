@@ -250,7 +250,8 @@ def test_has_dtypes_funcs():
 
     with pytest.raises(AssertionError):
         ck.has_dtypes(df, {'A': pat.is_float_dtype})
-
+    with pytest.raises(AssertionError):
+        ck.has_dtypes(df, {'A': pat.is_integer})
     with pytest.raises(AssertionError):
         dc.has_dtypes(items={'A': pat.is_bool_dtype})(_noop)(df)
 
