@@ -111,6 +111,30 @@ def is_shape(df, shape):
         raise
     return df
 
+
+def is_unique(df, columns=None):
+    """
+    Asserts that columns in the DataFrame only have unique values.
+
+    Parameters
+    ----------
+    df : DataFrame
+    columns : list
+      list of columns to restrict the check to
+
+    Returns
+    -------
+    df : DataFrame
+      same as the original
+    """
+    if columns is None:
+        columns = df.columns
+    for col in columns:
+        if not df[col].is_unique:
+            raise AssertionError("Column {!r} contains non-unique values".format(col))
+    return df
+
+
 def unique_index(df):
     """
     Assert that the index is unique
@@ -196,26 +220,53 @@ def within_n_std(df, n=3):
         raise AssertionError(msg)
     return df
 
+
 def has_dtypes(df, items):
     """
-    Assert that a DataFrame has ``dtypes``
+    Assert that a DataFrame has ``dtypes`` as described in ``items``.
 
     Parameters
     ==========
     df: DataFrame
     items: dict
-      mapping of columns to dtype.
+      A mapping of column names to:
+      - dtypes, and/or
+      - functions (but **not** other  callables!) that take a pandas.Series.dtype instance as input, and
+        return ``True`` if the ``dtype`` is of the correct dtype and ``False`` otherwise.
 
     Returns
     =======
     df : DataFrame
+
+    Examples
+    =========
+
+    .. code:: python
+      import numpy as np
+      import pandas as pd
+      import engarde.checks as ck
+      df = pd.DataFrame({'A': np.random.randint(0, 10, 10),
+                         'B': np.random.randn(10)})
+      df = df.pipe(ck.has_dtypes, items={'A': np.int32,
+                                         'B': pd.api.types.is_float_dtype})
     """
+    from types import FunctionType
+    from pandas.api.types import is_dtype_equal
     dtypes = df.dtypes
     for k, v in items.items():
-        if not dtypes[k] == v:
+        if isinstance(v, FunctionType):
+            result = v(dtypes[k])
+            if not isinstance(result, bool):
+                raise AssertionError("The function for key  {!r}"
+                                     " must return a boolean, returned {!r}".format(k,
+                                                                                    type(result)))
+            if not result:
+                raise AssertionError(
+                    "{} has the wrong dtype ({}) for function ({})".format(k, dtypes[k],
+                                                                           v.__name__))
+        elif not is_dtype_equal(dtypes[k], v):
             raise AssertionError("{} has the wrong dtype ({})".format(k, v))
     return df
-
 
 def one_to_many(df, unitcol, manycol):
     """

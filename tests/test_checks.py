@@ -155,6 +155,20 @@ def test_is_shape():
     with pytest.raises(AssertionError):
         dc.is_shape((9, 2))(_add_n)(df)
 
+
+def test_is_unique():
+    df = pd.DataFrame([[1, 2, 3], ['a', 'b', 'c']])
+    tm.assert_frame_equal(df, ck.is_unique(df))
+    result = dc.is_unique()(_noop)(df)
+    tm.assert_frame_equal(result, df)
+
+    df = pd.DataFrame([[1, 2, 3], [1, 'b', 'c']])
+    with pytest.raises(AssertionError):
+        ck.is_unique(df)
+    with pytest.raises(AssertionError):
+        dc.is_unique()(_noop)(df)
+
+
 def test_unique_index():
     df = pd.DataFrame([1, 2, 3], index=['a', 'b', 'c'])
     tm.assert_frame_equal(df, ck.unique_index(df))
@@ -218,6 +232,28 @@ def test_has_dtypes():
 
     with pytest.raises(AssertionError):
         dc.has_dtypes(items={'A': bool})(_noop)(df)
+
+
+def test_has_dtypes_funcs():
+    pat = pd.api.types
+
+    df = pd.DataFrame({'A': np.random.randint(0, 10, 10),
+                       'B': np.random.randn(10),
+                       'C': list('abcdefghij'),
+                       'D': pd.Categorical(np.random.choice(['a', 'b'], 10))})
+    dtypes = {'A': pat.is_integer_dtype,
+              'B': pat.is_float_dtype,
+              'C': pat.is_string_dtype,
+              'D':  pat.is_categorical_dtype}
+    tm.assert_frame_equal(df, ck.has_dtypes(df, dtypes))
+    tm.assert_frame_equal(df, dc.has_dtypes(items=dtypes)(_noop)(df))
+
+    with pytest.raises(AssertionError):
+        ck.has_dtypes(df, {'A': pat.is_float_dtype})
+
+    with pytest.raises(AssertionError):
+        dc.has_dtypes(items={'A': pat.is_bool_dtype})(_noop)(df)
+
 
 def test_one_to_many():
     df = pd.DataFrame({
