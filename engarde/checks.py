@@ -230,9 +230,11 @@ def has_dtypes(df, items):
     df: DataFrame
     items: dict
       A mapping of column names to:
-      - dtypes, and/or
       - functions (but **not** other  callables!) that take a pandas.Series.dtype instance as input, and
-        return ``True`` if the ``dtype`` is of the correct dtype and ``False`` otherwise.
+        return ``True`` if the ``dtype`` is of the correct dtype and ``False`` otherwise, and/or
+      - strings, corresponding to the possible output values of ``pd.api.types.infer_dtype``, and/or
+      - dtypes, or strings that can be converted to dtypes. For example, ``'int32'`` turns into
+        np.dtype('int32')``.
 
     Returns
     =======
@@ -250,23 +252,52 @@ def has_dtypes(df, items):
       df = df.pipe(ck.has_dtypes, items={'A': np.int32,
                                          'B': pd.api.types.is_float_dtype})
     """
-    from types import FunctionType
+    import types
+    import typing
     from pandas.api.types import is_dtype_equal
-    dtypes = df.dtypes
+    infer_strings = {
+                    'string',
+                    'unicode',
+                    'bytes',
+                    'floating',
+                    'integer',
+                    'mixed-integer',
+                    'mixed-integer-float',
+                    'complex,'
+                    'categorical',
+                    'boolean',
+                    'datetime64',
+                    'datetime',
+                    'date',
+                    'timedelta64',
+                    'timedelta',
+                    'time',
+                    'period',
+                    'mixed',
+                    }
+    if not isinstance(items, typing.Mapping):
+        items = {col_name: items for col_name in df.columns}
     for k, v in items.items():
-        if isinstance(v, FunctionType):
-            result = v(dtypes[k])
+        dtype = df.dtypes[k]
+        if isinstance(v, (types.FunctionType, types.BuiltinFunctionType)):
+            result = v(dtype)
             if not isinstance(result, bool):
                 raise AssertionError("The function for key  {!r}"
                                      " must return a boolean, returned {!r}".format(k,
                                                                                     type(result)))
             if not result:
-                raise AssertionError(
-                    "{} has the wrong dtype ({}) for function ({})".format(k, dtypes[k],
-                                                                           v.__name__))
-        elif not is_dtype_equal(dtypes[k], v):
-            raise AssertionError("{} has the wrong dtype ({})".format(k, v))
+                msg = "Columns {!r} has the wrong dtype ({!r}) for function {!r}"
+                raise AssertionError(msg.format(k, dtype, v.__name__))
+        elif v in infer_strings:
+            inferred_dtype_str = pd.api.types.infer_dtype(df[k])
+            if not inferred_dtype_str == v:
+                msg = "Column {!r} expected {!r} for infer_dtype, got {!r}"
+                raise AssertionError(msg.format(k, v, inferred_dtype_str))
+        elif not is_dtype_equal(dtype, v):
+            msg = "Column {!r} is checked for dtype {!r}, has dtype {!r}"
+            raise AssertionError(msg.format(k, v, dtype))
     return df
+
 
 def one_to_many(df, unitcol, manycol):
     """
