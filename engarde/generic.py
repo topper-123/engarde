@@ -37,32 +37,43 @@ def verify_df(df, check, *args, **kwargs):
         raise
     return df
 
+# -----------------------
+# Generic verify_columns
+# -----------------------
 
-def verify_columns(df, items, *args, **kwargs):
+def verify_columns(df, func, *args, axis=0, how='all', **kwargs):
     """
-    Verify that all checks in items are True.
+    Verify that ``df.agg(func, axis, *args, **kwargs)`` are ``True``.
 
     Parameters
     ==========
     df : DataFrame
-    items : function or dict of columns/functon mapping.
-        Functions should take DataFrame, *args, and **kwargs.
-        Should returns bool.
+    func : callable, string, dictionary, or list of string/callable.
+        Callables should take df, *args, and **kwargs as arguments and
+        return a bool.
+    axis : int
+        Axis 0 or axis 1.
+    how: str
+        ``'all'`` means the check is only passed if all column checks evaluate to True.
+        ``'any'`` means the check is passed if any column check evaluates to True.
 
     Returns
     =======
     df : DataFrame
         same as the input.
     """
-    from types import FunctionType
-    msg = "Columns {!r} don't pass the checks."
-    if isinstance(items, FunctionType):
-        for col_name, column in df.items():
-            assert items(column, *args, **kwargs), msg.format(col_name)
+    result = df.agg(func, axis, *args, **kwargs)
+    if how == 'all':
+        bool_result = result.all()
+    elif how == 'any':
+        bool_result = result.any()
     else:
-        for col_name, check_function in items.items():
-            col = df[col_name]
-            assert check_function(col, *args, **kwargs), msg.format(col_name)
+        msg = "Parameter 'how' must be either 'all' or 'any', was {!r}"
+        raise ValueError(msg.format(how))
+
+    msg = "These columns don't pass the validation: {!r}"
+    assert bool_result, msg.format(result[result == False].index.tolist())
+
     return df
 
 # ---------------

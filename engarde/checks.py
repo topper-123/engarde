@@ -119,8 +119,8 @@ def is_unique(df, columns=None):
     Parameters
     ----------
     df : DataFrame
-    columns : list
-      list of columns to restrict the check to
+    columns : list or None
+      list of columns to restrict the check to. If None, check all columns.
 
     Returns
     -------
@@ -256,7 +256,11 @@ def has_dtypes(df, items):
     """
     import types
     import typing
-    from pandas.api.types import is_dtype_equal
+    from pandas.api.types import is_dtype_equal, infer_dtype
+
+    if not isinstance(items, typing.Mapping):  # check all columns for items
+        items = {col_name: items for col_name in df.columns}
+
     infer_strings = {
                     'string', 'unicode', 'bytes',
                     'floating', 'integer', 'mixed-integer',
@@ -265,8 +269,6 @@ def has_dtypes(df, items):
                     'date', 'timedelta64', 'timedelta',
                     'time', 'period', 'mixed',
                     }
-    if not isinstance(items, typing.Mapping):  # check all columns for items
-        items = {col_name: items for col_name in df.columns}
     for k, v in items.items():
         dtype = df.dtypes[k]
         if isinstance(v, (types.FunctionType, types.BuiltinFunctionType)):
@@ -278,7 +280,7 @@ def has_dtypes(df, items):
                 msg = "Column {!r} has the wrong dtype ({!r}) for function {!r}"
                 raise AssertionError(msg.format(k, dtype, v.__name__))
         elif v in infer_strings:
-            inferred_dtype_str = pd.api.types.infer_dtype(df[k])
+            inferred_dtype_str = infer_dtype(df[k])
             if not inferred_dtype_str == v:
                 msg = "Column {!r} expected {!r} for infer_dtype, got {!r}"
                 raise AssertionError(msg.format(k, v, inferred_dtype_str))
