@@ -38,10 +38,10 @@ def verify_df(df, check, *args, **kwargs):
     return df
 
 # -----------------------
-# Generic verify_columns
+# Generic verify_df_series
 # -----------------------
 
-def verify_columns(df, func, *args, axis=0, how='all', **kwargs):
+def verify_df_series(df, func, *args, columns=None, rows=None, axis=0, how='all', **kwargs):
     """
     Verify that ``df.agg(func, axis, *args, **kwargs)`` are ``True``.
 
@@ -51,6 +51,10 @@ def verify_columns(df, func, *args, axis=0, how='all', **kwargs):
     func : callable, string, dictionary, or list of string/callable.
         Callables should take df, *args, and **kwargs as arguments and
         return a bool.
+    columns: str, list, slice object etc.
+        Same as allowed for df.loc
+    rows : str, list, slice object etc.
+        Same as allowed for df.loc
     axis : int
         Axis 0 or axis 1.
     how: str
@@ -62,19 +66,72 @@ def verify_columns(df, func, *args, axis=0, how='all', **kwargs):
     df : DataFrame
         same as the input.
     """
-    result = df.agg(func, axis, *args, **kwargs)
+    rows, columns = rows or slice(None), columns or slice(None)
+    check_df = df.loc[rows, columns]
+
+    result_df = check_df.agg(func, axis, *args, **kwargs)
     if how == 'all':
-        bool_result = result.all()
+        result = result_df.all()
     elif how == 'any':
-        bool_result = result.any()
+        result = result_df.any()
     else:
         msg = "Parameter 'how' must be either 'all' or 'any', was {!r}"
         raise ValueError(msg.format(how))
 
     msg = "These columns don't pass the validation: {!r}"
-    assert bool_result, msg.format(result[result == False].index.tolist())
+    not_passed_cols = result_df[result_df == False].index.tolist()
+    assert result, msg.format(not_passed_cols)
 
     return df
+
+
+def verify_columns(df, func, *args, columns=None, how='all', **kwargs):
+    """
+    Verify that ``func`` validates for each column in df.
+
+    Parameters
+    ==========
+    df : DataFrame
+    func : callable, string, dictionary, or list of string/callable.
+        Callables should take df, *args, and **kwargs as arguments and
+        return a bool.
+    columns: str, list, slice object etc.
+        Same as allowed for df.loc
+    how: str
+        ``'all'`` means the check is only passed if all column checks evaluate to True.
+        ``'any'`` means the check is passed if any column check evaluates to True.
+
+    Returns
+    =======
+    df : DataFrame
+        same as the input.
+    """
+    return verify_df_series(df, func, *args, columns=columns, axis=0, how=how, **kwargs)
+
+
+def verify_rows(df, func, *args, rows=None, how='all', **kwargs):
+    """
+    Verify that ``func`` validates for rows in df.
+
+    Parameters
+    ==========
+    df : DataFrame
+    func : callable, string, dictionary, or list of string/callable.
+        Callables should take df, *args, and **kwargs as arguments and
+        return a bool.
+    rows : str, list, slice object etc.
+        Same as allowed for df.loc
+    how: str
+        ``'all'`` means the check is only passed if all column checks evaluate to True.
+        ``'any'`` means the check is passed if any column check evaluates to True.
+
+    Returns
+    =======
+    df : DataFrame
+        same as the input.
+    """
+    return verify_df_series(df, func, *args, rows=rows, axis=1, how=how, **kwargs)
+
 
 # ---------------
 # Error reporting
@@ -87,5 +144,5 @@ def bad_locations(df):
     msg = bad.values
     return msg
 
-__all__ = ['verify_df', 'verify_columns', 'bad_locations']
+__all__ = ['verify_df', 'verify_df_series', 'bad_locations']
 
