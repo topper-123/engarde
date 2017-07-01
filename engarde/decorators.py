@@ -172,6 +172,20 @@ def verify_columns(items, *args, **kwargs):
     return decorate
 
 
+def verify_rows(items, *args, **kwargs):
+    """
+    Assert ``items`` for for rows in df.
+    """
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args_inner, **kwargs_inner):
+            result = func(*args_inner, **kwargs_inner)
+            ck.verify_rows(result, items, *args, **kwargs)
+            return result
+        return wrapper
+    return decorate
+
+
 def is_same_as(df_to_compare, **assert_kwargs):
     def decorate(func):
         @wraps(func)

@@ -78,7 +78,10 @@ def verify_df_series(df, func, *args, columns=None, rows=None, axis=0, how='all'
         msg = "Parameter 'how' must be either 'all' or 'any', was {!r}"
         raise ValueError(msg.format(how))
 
-    msg = "These columns don't pass the validation: {!r}"
+    if axis == 0:
+        msg = "These columns don't pass the validation: {!r}"
+    else:
+        msg = "These rows don't pass the validation: {!r}"
     not_passed_cols = result_df[result_df == False].index.tolist()
     assert result, msg.format(not_passed_cols)
 

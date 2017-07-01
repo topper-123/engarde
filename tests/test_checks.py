@@ -298,7 +298,7 @@ def test_verify_columns():
 
     with pytest.raises(AssertionError):
         ck.verify_columns(df, f, n=2)
-        dc.verify_all(f, n=2)(df)
+        dc.verify_columns(f, n=2)(df)
 
 
 def test_is_same_as():

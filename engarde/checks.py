@@ -14,7 +14,7 @@ import pandas.util.testing as tm
 import six
 
 from engarde import generic
-from engarde.generic import verify_df, verify_columns
+from engarde.generic import verify_df, verify_columns, verify_rows
 
 
 def none_missing(df, columns=None):
