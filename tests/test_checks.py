@@ -300,6 +300,16 @@ def test_verify_columns():
         ck.verify_columns(df, f, n=2)
         dc.verify_columns(f, n=2)(df)
 
+def test_verify_rows():
+    f = lambda x, n: (x.A > n)
+    df = pd.DataFrame({'A': [1, 2, 3], 'B':list('abc')})
+    tm.assert_frame_equal(df, ck.verify_rows(df, f, 0))
+    tm.assert_frame_equal(df, ck.verify_rows(df, f, n=0))
+
+    with pytest.raises(AssertionError):
+        ck.verify_rows(df, f, n=2)
+        dc.verify_rows(f, n=2)(df)
+
 
 def test_is_same_as():
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [1, 2, 3]})

@@ -147,5 +147,5 @@ def bad_locations(df):
     msg = bad.values
     return msg
 
-__all__ = ['verify_df', 'verify_df_series', 'bad_locations']
+__all__ = ['verify_df', 'verify_df_series', 'verify_columns', 'verify_rows', 'bad_locations']
 
