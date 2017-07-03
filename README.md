@@ -16,8 +16,8 @@ The differences between this fork and Engarde proper are:
   less useful than ``verify_columns`` and ``verify_rows`` and I like that the API is small.
 * ``verify_columns`` and ``verify_rows`` functions are added to ``checks`` and ``decorators``.
 * ``has_dtypes`` can accept functions that return ``True`` if the test is passd 
-  (typically the ones in ``pd.api.types``, e.g. ``is_integer_dtype``) and strings 
-  like string output of ``pd.api.types.infer_dtypes``.
+  (typically the ones in ``pd.api.types``, e.g. ``is_integer_dtype``) and can accept strings 
+  from the allowed string output of ``pd.api.types.infer_dtypes``.
 
 Installation
 -------------
@@ -31,6 +31,9 @@ and then in your python code:
 ```python
   import engarde
 ```
+
+Further details
+---------------
 
 For details, see doc strings for relevant functions. For a tutorial, see
 [Engarde's tutorial](http://engarde.readthedocs.io/en/latest/example.html),
