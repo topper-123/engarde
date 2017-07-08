@@ -112,7 +112,7 @@ def is_shape(df, shape):
     return df
 
 
-def is_unique(df, columns=None):
+def unique(df, columns=None):
     """
     Asserts that columns in the DataFrame only have unique values.
 

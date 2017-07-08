@@ -28,7 +28,7 @@ def is_shape(shape):
     return decorate
 
 
-def is_unique(columns=None):
+def unique(columns=None):
     """
     Asserts that columns in the DataFrame only have unique values.
     """
@@ -36,7 +36,7 @@ def is_unique(columns=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            ck.is_unique(result, columns=columns)
+            ck.unique(result, columns=columns)
             return result
         return wrapper
     return decorate

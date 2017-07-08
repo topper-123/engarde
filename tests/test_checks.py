@@ -156,17 +156,17 @@ def test_is_shape():
         dc.is_shape((9, 2))(_add_n)(df)
 
 
-def test_is_unique():
+def test_unique():
     df = pd.DataFrame([[1, 2, 3], ['a', 'b', 'c']])
-    tm.assert_frame_equal(df, ck.is_unique(df))
-    result = dc.is_unique()(_noop)(df)
+    tm.assert_frame_equal(df, ck.unique(df))
+    result = dc.unique()(_noop)(df)
     tm.assert_frame_equal(result, df)
 
     df = pd.DataFrame([[1, 2, 3], [1, 'b', 'c']])
     with pytest.raises(AssertionError):
-        ck.is_unique(df)
+        ck.unique(df)
     with pytest.raises(AssertionError):
-        dc.is_unique()(_noop)(df)
+        dc.unique()(_noop)(df)
 
 
 def test_unique_index():
@@ -209,7 +209,7 @@ def test_within_range():
         dc.within_range(items)(_noop)(df)
 
 def test_within_n_std():
-    df = pd.DataFrame({'A': np.arange(10)})
+    df = pd.DataFrame({'A': np.arange(10), 'B': list('abcde')*2})
     tm.assert_frame_equal(df, ck.within_n_std(df))
     tm.assert_frame_equal(df, dc.within_n_std()(_noop)(df))
 
