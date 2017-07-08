@@ -242,6 +242,9 @@ def test_one_to_many():
     result = ck.one_to_many(df, 'units', 'parameter')
     tm.assert_frame_equal(df, result)
 
+    result = dc.one_to_many('units', 'parameter')(_noop)(df)
+    tm.assert_frame_equal(df, result)
+
 def test_one_to_many_raises():
     df = pd.DataFrame({
         'parameter': ['Cu', 'Cu', 'Pb', 'Pb'],
