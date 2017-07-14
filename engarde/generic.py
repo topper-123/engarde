@@ -48,7 +48,7 @@ def verify_df_series(df, func, *args, columns=None, rows=None, axis=0, how='all'
     Parameters
     ==========
     df : DataFrame
-    func : callable, string, dictionary, or list of string/callable.
+    func : callable, string or dictionary of callables.
         Callables should take df, *args, and **kwargs as arguments and
         return a bool.
     columns: str, list, slice object etc.
@@ -95,7 +95,7 @@ def verify_columns(df, func, *args, columns=None, how='all', **kwargs):
     Parameters
     ==========
     df : DataFrame
-    func : callable, string, dictionary, or list of string/callable.
+    func : callable, string or dictionary of callables.
         Callables should take df, *args, and **kwargs as arguments and
         return a bool.
     columns: str, list, slice object etc.
@@ -119,7 +119,7 @@ def verify_rows(df, func, *args, rows=None, how='all', **kwargs):
     Parameters
     ==========
     df : DataFrame
-    func : callable, string, dictionary, or list of string/callable.
+    func : callable, string or dictionary of callables.
         Callables should take df, *args, and **kwargs as arguments and
         return a bool.
     rows : str, list, slice object etc.
