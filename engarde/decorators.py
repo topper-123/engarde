@@ -158,7 +158,7 @@ def verify_df(check, *args, **kwargs):
     return decorate
 
 
-def verify_columns(items, *args, **kwargs):
+def verify_columns(items, *args, columns=None, **kwargs):
     """
     Assert that for all keys/values of items, `value(df[key], *args, **kwargs)` is true.
     """
@@ -166,13 +166,13 @@ def verify_columns(items, *args, **kwargs):
         @wraps(func)
         def wrapper(*args_inner, **kwargs_inner):
             result = func(*args_inner, **kwargs_inner)
-            ck.verify_columns(result, items, *args, **kwargs)
+            ck.verify_columns(result, items, *args, columns=columns, **kwargs)
             return result
         return wrapper
     return decorate
 
 
-def verify_rows(items, *args, **kwargs):
+def verify_rows(items, *args, rows=None, **kwargs):
     """
     Assert ``items`` for for rows in df.
     """
@@ -180,7 +180,7 @@ def verify_rows(items, *args, **kwargs):
         @wraps(func)
         def wrapper(*args_inner, **kwargs_inner):
             result = func(*args_inner, **kwargs_inner)
-            ck.verify_rows(result, items, *args, **kwargs)
+            ck.verify_rows(result, items, *args, rows=None, **kwargs)
             return result
         return wrapper
     return decorate
